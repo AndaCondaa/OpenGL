@@ -1,2 +1,2 @@
 # OpenGL
-OpenGL Practice
+OpenGL Practice in Qt

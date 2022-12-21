@@ -14,8 +14,10 @@ public:
     ~Widget();
 
     GLfloat xAngle, yAngle, zAngle;
-    GLboolean bDepthTest;
-    GLboolean bCullFace;
+    //GLboolean bDepthTest;
+    //GLboolean bCullFace;
+    GLenum polygonMode;
+    GLenum shadeMode;
 
 protected:
     void keyPressEvent(QKeyEvent* event);

@@ -3,8 +3,10 @@
 Widget::Widget(QWidget *parent)
     : QOpenGLWidget(parent)
 {
-    bDepthTest = GL_TRUE;
-    bCullFace = GL_FALSE;
+    //bDepthTest = GL_TRUE;
+    //bCullFace = GL_FALSE;
+    polygonMode = GL_FILL;
+    shadeMode = GL_FLAT;
 
     setWindowTitle("OpenGL Pyramid3D");
     resize(600, 600);
@@ -33,6 +35,7 @@ void Widget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glShadeModel(GL_FLAT);
 
+    /*
     if(bDepthTest){
         glEnable(GL_DEPTH_TEST);
     } else {
@@ -44,6 +47,9 @@ void Widget::paintGL()
     } else {
         glDisable(GL_CULL_FACE);
     }
+    */
+    glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
+    glShadeModel(shadeMode);
 
     glPushMatrix();
     glRotatef(xAngle, 1.0f, 0.0f, 0.0f);
@@ -94,6 +100,7 @@ void Widget::paintGL()
 
 void Widget::keyPressEvent(QKeyEvent* event)
 {
+    /*
     switch(event->key()) {
     case Qt::Key_Up:
         bDepthTest = GL_TRUE;
@@ -129,8 +136,27 @@ void Widget::keyPressEvent(QKeyEvent* event)
         xAngle = yAngle = zAngle = 0.0;
         break;
     }
+    */
+    switch(event->key()) {
+    case Qt::Key_1:
+        polygonMode = GL_POINT;
+        break;
+    case Qt::Key_2:
+        polygonMode = GL_LINE;
+        break;
+    case Qt::Key_3:
+        polygonMode = GL_FILL;
+        break;
+    case Qt::Key_4:
+        shadeMode = GL_SMOOTH;
+        break;
+    case Qt::Key_5:
+        shadeMode = GL_FLAT;
+        break;
+    }
 
-    QString str = QString("Pyramid3D : x : %1, y : %2, z : %3").arg(xAngle).arg(yAngle).arg(zAngle);
-    setWindowTitle(str);
+    //QString str = QString("Pyramid3D : x : %1, y : %2, z : %3").arg(xAngle).arg(yAngle).arg(zAngle);
+    //setWindowTitle(str);
+
     update();
 }

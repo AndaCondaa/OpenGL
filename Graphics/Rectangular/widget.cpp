@@ -3,7 +3,7 @@
 Widget::Widget(QWidget *parent)
     : QOpenGLWidget(parent)
 {
-    setWindowTitle("Triangels");
+    setWindowTitle("Rectangular");
     resize(600, 600);
 }
 
@@ -22,7 +22,7 @@ void Widget::resizeGL(int w, int h)
     glViewport(0, 0, (GLint)w, (GLint)h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, w/this->size().width(), 0, h/this->size().height(), -1, 1);
+    glOrtho(0, 0, 0, 0, -1, 1);
 }
 
 void Widget::paintGL()

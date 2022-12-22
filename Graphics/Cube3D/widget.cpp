@@ -48,20 +48,28 @@ void Widget::paintGL()
 //        0.5, 0.5, 0
 //    };
 
-    static GLfloat vert[] = {
-        0, 0, -0.8,         //중앙
-        0.5, 0.5, 0,        //우상
-        -0.5, 0.5, 0,       //좌상
-        -0.5, -0.5, 0,      //좌하
-        0.5, -0.5, 0        //우하
-    };
+//    static GLfloat vert[] = {
+//        0, 0, -0.8,         //중앙
+//        0.5, 0.5, 0,        //우상
+//        -0.5, 0.5, 0,       //좌상
+//        -0.5, -0.5, 0,      //좌하
+//        0.5, -0.5, 0        //우하
+//    };
 
-    static GLfloat color[] = {
-        1.0, 1.0, 1.0,      //중앙
-        0.0, 0.0, 1.0,      //우상
-        1.0, 0.0, 0.0,      //좌상
-        1.0, 1.0, 0.0,      //좌하
-        0.0, 1.0, 0.0       //우하
+//    static GLfloat color[] = {
+//        1.0, 1.0, 1.0,      //중앙
+//        0.0, 0.0, 1.0,      //우상
+//        1.0, 0.0, 0.0,      //좌상
+//        1.0, 1.0, 0.0,      //좌하
+//        0.0, 1.0, 0.0       //우하
+//    };
+
+    static GLfloat vertcolor[] = {
+        1.0, 1.0, 1.0,  0, 0, -0.8,
+        0.0, 0.0, 1.0,  0.5, 0.5, 0,
+        1.0, 0.0, 0.0,  -0.5, 0.5, 0,
+        1.0, 1.0, 0.0,  -0.5, -0.5, 0,
+        0.0, 1.0, 0.0,  0.5, -0.5, 0
     };
 
     static GLubyte index[] = {
@@ -85,9 +93,9 @@ void Widget::paintGL()
     glRectf(-0.5, 0.5, 0.5, -0.5);
 
     glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(3, GL_FLOAT, 0, vert);
+    glVertexPointer(3, GL_FLOAT, sizeof(GLfloat)*6, &vertcolor[3]);
     glEnableClientState(GL_COLOR_ARRAY);
-    glColorPointer(3, GL_FLOAT, 0, color);
+    glColorPointer(3, GL_FLOAT, sizeof(GLfloat)*6, vertcolor);
 
     glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_BYTE, index);
 

@@ -1,7 +1,6 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
-#include <QWidget>
 #include <QtOpenGL>
 #include <QtOpenGLWidgets>
 
@@ -13,14 +12,16 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
-    GLfloat xAngle, yAngle, zAngle;
-
 protected:
-    void keyPressEvent(QKeyEvent* event);
+     void initializeGL( ) override;
+     void paintGL( ) override;
+     void resizeGL(int w, int h) override;
+     void keyPressEvent(QKeyEvent* event) override;
 
 private:
-    void initializeGL();
-    void paintGL();
-    void resizeGL(int w, int h);
+    GLfloat xAngle, yAngle, zAngle;
+    int rotation;
+    GLboolean drawInOrtho;
 };
+
 #endif // WIDGET_H

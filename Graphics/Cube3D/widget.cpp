@@ -1,112 +1,111 @@
 #include "widget.h"
 
-Widget::Widget(QWidget *parent)
-    : QOpenGLWidget(parent)
+#include <QTimer>
+
+#ifdef Q_OS_MACOS
+/* Defined before OpenGL and GLUT includes to avoid deprecation messages */
+#define GL_SILENCE_DEPRECATION
+#endif
+
+#define ONE 1
+
+Widget::Widget(QWidget *parent) : QOpenGLWidget(parent)
 {
+    xAngle = yAngle = zAngle = 0;
+    rotation = 0;
+    drawInOrtho = GL_TRUE;
 
-    xAngle = 120, yAngle = 30; zAngle = 75;
+    setWindowTitle("OpenGL Cube");
+    resize(300, 300);
 
-    setWindowTitle("OpenGL Array");
-    resize(600, 600);
+    QTimer* timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout( )), SLOT(update( )));
+    timer->start(250);
 }
 
 Widget::~Widget()
 {
 }
 
-void Widget::initializeGL()
-{
-    initializeOpenGLFunctions();
+
+void Widget::initializeGL( ) {
+    initializeOpenGLFunctions( );
     glClearColor(0.0, 0.0, 0.0, 1.0);
 }
 
-void Widget::resizeGL(int w, int h)
-{
+void Widget::resizeGL(int w, int h) {
     glViewport(0, 0, (GLint)w, (GLint)h);
     glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-1, 1, -1, 1, -1, 1);
+    glLoadIdentity( );
+    glOrtho(-10, 10, -10, 10, -10, 10);
+    glClearColor(0.5, 0.5, 0.5, 0.0);
 }
 
-void Widget::paintGL()
+void Widget::paintGL( )
 {
-//    static GLfloat vert[] = {
-//        0, 0, -0.8,             //90도
-//        0.5, 0.5, 0,
-//        -0.5, 0.5, 0,
+    // 정육면체의 각 면들을 설정
+    // 정육면체이기 때문에 6개의 face 를 설정했다.
+    // 방향성 때문에 순서에 일관성이 있다.
+    static GLubyte front[]  = {2, 1, 3, 0}; 	// front face
+    static GLubyte back[]   = {5, 6, 4, 7}; 	// back face
+    static GLubyte top[]    = {6, 2, 7, 3}; 	// top face
+    static GLubyte bottom[] = {4, 0, 5, 1}; 	// bottom face
+    static GLubyte left[]   = {2, 6, 1, 5};     // left face
+    static GLubyte right[]  = {4, 7, 0, 3};     // right face
 
-//        0, 0, -0.8,             //180도
-//        -0.5, 0.5, 0,
-//        -0.5, -0.5, 0,
-
-//        0, 0, -0.8,             //270도
-//        -0.5, -0.5, 0,
-//        0.5, -0.5, 0,
-
-//        0, 0, -0.8,             //360도
-//        0.5, -0.5, 0,
-//        0.5, 0.5, 0
-//    };
-
-//    static GLfloat vert[] = {
-//        0, 0, -0.8,         //중앙
-//        0.5, 0.5, 0,        //우상
-//        -0.5, 0.5, 0,       //좌상
-//        -0.5, -0.5, 0,      //좌하
-//        0.5, -0.5, 0        //우하
-//    };
-
-//    static GLfloat color[] = {
-//        1.0, 1.0, 1.0,      //중앙
-//        0.0, 0.0, 1.0,      //우상
-//        1.0, 0.0, 0.0,      //좌상
-//        1.0, 1.0, 0.0,      //좌하
-//        0.0, 1.0, 0.0       //우하
-//    };
-
-    static GLfloat vertcolor[] = {
-        1.0, 1.0, 1.0,  0, 0, -0.8,
-        0.0, 0.0, 1.0,  0.5, 0.5, 0,
-        1.0, 0.0, 0.0,  -0.5, 0.5, 0,
-        1.0, 1.0, 0.0,  -0.5, -0.5, 0,
-        0.0, 1.0, 0.0,  0.5, -0.5, 0
-    };
-
-    static GLubyte index[] = {
-            0, 1, 2,        //90도
-            0, 2, 3,        //180도
-            0, 3, 4,        //270도
-            0, 4, 1         //360도
-    };
+    // X,Y,Z 로 된 좌표(꼭지점)이다.
+    // 예를 들면 face 에서 설정된 0 은 (-5,-5,-,5) 이다.
+    static GLshort vertices[] = {-5,-5,-5,  5,-5,-5,  5,5,-5,
+                       -5,5,-5,  -5,-5,5,   5,-5,5,   5,5,5,  -5,5,5};
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-    glShadeModel(GL_FLAT);
-
+    glEnable(GL_DEPTH_TEST);       // 3차원에 객체를 그릴 때 사용
     glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
+    glLoadIdentity( );
+
+    if(!drawInOrtho)
+      glTranslated(0, 0, -30);
+
+    // Y 축 기준으로 45도 회전(Rotate)
     glRotatef(xAngle, 1.0f, 0.0f, 0.0f);
-    glRotatef(yAngle, 0.0f, 1.0f, 0.0f);
+    glRotatef(yAngle++, 0.0f, 1.0f, 0.0f);
     glRotatef(zAngle, 0.0f, 0.0f, 1.0f);
 
-    glColor3f(1, 1, 1);
-    glRectf(-0.5, 0.5, 0.5, -0.5);
+    glEnable(GL_CULL_FACE);
+    //glFrontFace(GL_CW);
 
     glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(3, GL_FLOAT, sizeof(GLfloat)*6, &vertcolor[3]);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glColorPointer(3, GL_FLOAT, sizeof(GLfloat)*6, vertcolor);
+    // 사용할 vertex 를 등록
+    glVertexPointer(3, GL_SHORT, 0, vertices);
 
-    glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_BYTE, index);
+    // 6개의 face 를 각각 Draw
+    // 각 face 를 다른 색으로 표현한다.
+    glColor4d(ONE,0,0,0);
+    glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, front);
 
-    glPopMatrix();
-    glFlush();
+    glColor4d(0,ONE,0,0);
+    glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, back);
+
+    glColor4d(0,0,ONE,0);
+    glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, top);
+
+    glColor4d(ONE,ONE,0,0);
+    glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, bottom);
+
+    glColor4d(0,ONE,ONE,0);
+    glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, left);
+
+    glColor4d(ONE,0,ONE,0);
+    glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, right);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glFlush( );
 }
 
 void Widget::keyPressEvent(QKeyEvent* event)
 {
+    switch(event->key( )) {
 
-    switch(event->key()) {
     case Qt::Key_1:
         yAngle += 2;
         break;
@@ -126,12 +125,11 @@ void Widget::keyPressEvent(QKeyEvent* event)
         zAngle -= 2;
         break;
     case Qt::Key_0:
-        xAngle = yAngle = zAngle = 0;
+        xAngle = yAngle = zAngle = 0.0;
         break;
-    }
+    };
 
-    QString str = QString("x : %1, y : %2, z : %3").arg(xAngle).arg(yAngle).arg(zAngle);
+    QString str = QString("Cube3D : x : %1, y : %2, z : %3")                 .arg(xAngle).arg(yAngle).arg(zAngle);
     setWindowTitle(str);
-
-    update();
+    update( );
 }

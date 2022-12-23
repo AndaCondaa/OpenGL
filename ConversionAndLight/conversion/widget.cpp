@@ -28,22 +28,29 @@ void Widget::resizeGL(int w, int h)
     glOrtho(-1, 1, -1, 1, -1, 1);
 }
 
-//void Widget::paintGL()
-//{
-//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-//    glutWireTeapot(0.2);
-
-//    glFlush();
-//}
-
 void Widget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
+
+    glColor3f(1.0, 1.0, 1.0);
+    glBegin(GL_TRIANGLES);
+    glVertex3f(-0.5, 0.0, 0.0);
+    glVertex3f(0.5, 0.0, 0.0);
+    glVertex3f(0.0, 1.0, 0.0);
+    glEnd();
+
+
     glPushMatrix();
-    glRotatef(100.0, 1.0, 0.25, 0.5);
-    glutWireTeapot(0.2);
+    glTranslatef(0.2, 0.2, 0.0);
+    glColor3f(1.0, 1.0, 0.0);
+    glRotatef(45.0, 0.0, 0.0, 0.8);
+    glBegin(GL_TRIANGLES);
+    glVertex3f(-0.5, 0.0, 0.0);
+    glVertex3f(0.5, 0.0, 0.0);
+    glVertex3f(0.0, 1.0, 0.0);
+    glEnd();
+
     glPopMatrix();
 
     glFlush();

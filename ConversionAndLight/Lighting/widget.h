@@ -13,10 +13,10 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
-    GLfloat nx, ny;
-    GLboolean bScissor;
-    GLboolean bStencil;
-    GLboolean bEqual;
+    GLfloat lx, ly, lz;
+    GLfloat xAngle, yAngle, zAngle;
+    GLboolean bAmbient;
+    GLboolean bAttach;
 
 private:
     void initializeGL();

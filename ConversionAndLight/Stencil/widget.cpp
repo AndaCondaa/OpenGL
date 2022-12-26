@@ -1,11 +1,15 @@
 #include "widget.h"
 
 #include <GL/glut.h>
-#include <cmath>
 
 Widget::Widget(QWidget *parent)
     : QOpenGLWidget(parent)
 {
+    nx = 0, ny = 0;
+    bScissor = FALSE;
+    bStencil = FALSE;
+    bEqual = FALSE;
+
     setWindowTitle("OpenGL Matrix");
     resize(600, 600);
 }
@@ -17,7 +21,7 @@ Widget::~Widget()
 void Widget::initializeGL()
 {
     initializeOpenGLFunctions();
-    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClearColor(0.0, 0.0, 0.0, 0.0);
 }
 
 void Widget::resizeGL(int w, int h)
@@ -30,72 +34,93 @@ void Widget::resizeGL(int w, int h)
 
 void Widget::paintGL()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
+    // 가위 테스트
+    if (bScissor) {
+        glEnable(GL_SCISSOR_TEST);
+    } else {
+        glDisable(GL_SCISSOR_TEST);
+    }
+    glScissor(10, 10, 150, 150);
 
-//    GLfloat trans[16] = {
-//        1, 0, 0, 0,
-//        0, 1, 0, 0,
-//        0, 0, 1, 0,
-//        0.5, 0.5, 0, 1
-//    };
-//    glMultMatrixf(trans);
+    if (bStencil) {
+        glEnable(GL_STENCIL_TEST);
+    } else {
+        glDisable(GL_STENCIL_TEST);
+    }
 
-//    GLfloat scale[16] = {
-//        1, 0, 0, 2,
-//        0, 1, 0, 2,
-//        0, 0, 1, 2,
-//        0, 0, 0, 1
-//    };
-//    glMultMatrixf(scale);
+    // 스텐실 버퍼에 마킹만 한다.
+    glStencilFunc(GL_NEVER, 0x0, 0x0);
+    glStencilOp(GL_INCR, GL_INCR, GL_INCR);
 
-//    GLfloat angle = 45.0;
-//    GLfloat value = angle * M_PI / 180;
-//    GLfloat trans[16] = {
-//        cos(value), -sin(value), 0, 0,
-//        sin(value), cos(value), 0, 0,
-//        0, 0, 1, 0,
-//        0, 0, 0, 1
-//    };
-//    glMultMatrixf(trans);
+    // 수평 선 그음
+    glColor3f(1, 1, 1);
+    GLint arFac[] = {1, 1, 1, 2, 3, 4, 2, 3, 2};
+    GLushort arPat[] = {0xaaaa, 0x33ff, 0x57ff, 0xaaaa, 0xaaaa,
+                       0xaaaa, 0x33ff, 0x33ff, 0x57ff};
+    glEnable(GL_LINE_STIPPLE);
+    glLineWidth(3);
+    GLfloat y;
+    GLint idx = 0;
+    for (y = 0.8; y > -0.8; y -= 0.2) {
+        glLineStipple(arFac[idx], arPat[idx]);
+        glBegin(GL_LINES); {
+            glVertex2f(-0.8, y);
+            glVertex2f(0.8, y);
+        }
+        glEnd();
+        idx++;
+    }
 
-//    GLfloat trans[16] = {
-//        1, 0, 0, 0,
-//        0, 1, 0, 0,
-//        0, 0, 1, 0,
-//        0.5, 0.5, 0, 1
-//    };
-//    glMultMatrixf(trans);
+    // 스텐실 값과 비교하여 특정 영역에만 출력한다.
+    glStencilFunc(bEqual?GL_EQUAL:GL_NOTEQUAL, 0x1, 0xff);
 
-//    GLfloat scale[16] = {
-//        1.5, 0, 0, 0,
-//        0, 1.5, 0, 0,
-//        0, 0, 1, 0,
-//        0, 0, 0, 1
-//    };
-//    glMultMatrixf(scale);
+    // nx, ny 위치에 삼각형 그림
+    glColor3f(0.0, 0.0, 1.0);
+    glBegin(GL_TRIANGLES);
+        glVertex2f(nx + 0.0, ny + 0.5);
+        glVertex2f(nx - 0.5, ny - 0.5);
+        glVertex2f(nx + 0.5, ny - 0.5);
+    glEnd();
 
-//    GLfloat transScale[16] = {
-//        1.5, 0, 0, 0,
-//        0, 1.5, 0, 0,
-//        0, 0, 1, 0,
-//        0.5, 0.5, 0, 1
-//    };
-//    glMultMatrixf(transScale);
-
-    GLfloat sheer[16] = {
-        1, 0, 0, 0,
-        0.5, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1
-    };
-    glMultMatrixf(sheer);
-
-    glutWireTeapot(0.2);
-
-    glPopMatrix();
     glFlush();
 }
 
+void Widget::keyPressEvent(QKeyEvent* event)
+{
+    switch(event->key()) {
+    case Qt::Key_1:
+        bScissor = TRUE;
+        break;
+    case Qt::Key_2:
+        bScissor = FALSE;
+        break;
+    case Qt::Key_3:
+        bStencil = TRUE;
+        break;
+    case Qt::Key_4:
+        bStencil = FALSE;
+        break;
+    case Qt::Key_5:
+        bEqual = TRUE;
+        break;
+    case Qt::Key_6:
+        bEqual = FALSE;
+        break;
+    case Qt::Key_A:
+        nx -= 0.1;
+        break;
+    case Qt::Key_S:
+        nx += 0.1;
+        break;
+    case Qt::Key_D:
+        ny += 0.1;
+        break;
+    case Qt::Key_F:
+        ny -= 0.1;
+        break;
+    };
+
+    update();
+}

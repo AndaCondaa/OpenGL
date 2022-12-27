@@ -13,6 +13,10 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
+    GLfloat xAngle, yAngle, zAngle;
+    GLint EnvMode;
+    GLint TexFilter;
+
 private:
     void initializeGL();
     void paintGL();

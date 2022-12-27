@@ -27,6 +27,7 @@ void Widget::resizeGL(int w, int h)
     glOrtho(-1, 1, -1, 1, -1, 1);
 }
 
+/*
 void Widget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -48,7 +49,21 @@ void Widget::paintGL()
 
     glFlush();
 }
+*/
 
-void Widget::keyPressEvent(QKeyEvent* event)
+void Widget::paintGL()
 {
+    GLubyte *data;
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    QImage* image = new QImage("24.bmp");
+    data = image->bits();
+    if (data != NULL) {
+        glRasterPos2f(-1, -1);
+        qDebug("%d", __LINE__);
+        glDrawPixels(image->width(), image->height(),
+                     GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
+        qDebug("%d", __LINE__);
+    }
+
+    glFlush();
 }
